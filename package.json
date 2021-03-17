@@ -1,0 +1,19 @@
+{
+  "name": "companion-module-cue-keypadcue-55",
+  "version": "1.0.0",
+  "description": "See [HELP.md](./HELP.md) and [LICENSE](./LICENSE)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitfocus/companion-module-cue-keypadcue-55.git"
+  },
+  "author": "Jeffrey Davidsz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bitfocus/companion-module-cue-keypadcue-55/issues"
+  },
+  "homepage": "https://github.com/bitfocus/companion-module-cue-keypadcue-55#readme"
+}
