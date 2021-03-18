@@ -1,3 +1,4 @@
+import { Socket } from 'net'
 import InstanceSkel = require('../../../instance_skel')
 import {
 	CompanionActionEvent,
@@ -7,12 +8,16 @@ import {
 import { GetActionsList, HandleAction } from './actions'
 import { DeviceConfig, GetConfigFields } from './config'
 
+const tcp = require('tcp')
+const socket = require('socket.io')
+
+
+
 class ControllerInstance extends InstanceSkel<DeviceConfig> {
 	initDone: Boolean
-	
 	constructor(system: CompanionSystem, id: string, config: DeviceConfig) {
 		super(system, id, config)
-
+		this.socket
 		this.initDone = false
 	}
 
@@ -24,6 +29,36 @@ class ControllerInstance extends InstanceSkel<DeviceConfig> {
 		this.status(this.STATUS_UNKNOWN)
 		this.updateConfig(this.config)
 	}
+
+	public init_tcp(): void {
+		if (this.socket !== undefined) {
+			this.socket.destroy();
+			delete this.socket;
+		}
+	
+		this.status(this.STATUS_WARNING, 'Connecting');
+	
+		if (this.config.host) {
+			this.socket = new tcp(this.config.host, this.config.port);
+	
+			this.socket.on('status_change', function (status, message) {
+				this.status(status, message);
+			});
+	
+			this.socket.on('error', function (err) {
+				debug("Network error", err);
+				this.status(this.STATE_ERROR, err);
+				this.log('error',"Network error: " + err.message);
+			});
+	
+			this.socket.on('connect', function () {
+				this.status(this.STATE_OK);
+				debug("Connected");
+			})
+	
+			this.socket.on('data', function (data) {});
+		}
+	}
 	/**
 	 * Process an updated configuration array.
 	 *
@@ -34,6 +69,7 @@ class ControllerInstance extends InstanceSkel<DeviceConfig> {
 		this.config = config
 		this.initDone = false
 		this.setActions(GetActionsList())
+		this.init_tcp()
 	}
 
 	public action(action: CompanionActionEvent): void {
