@@ -19,6 +19,11 @@
 	"bugs": {
 		"url": "https://github.com/bitfocus/companion-module-cue-keypadcue-55/issues"
 	},
+	"support": {
+		"action": true,
+		"feedback": false,
+		"preset": false
+	},
 	"homepage": "https://github.com/bitfocus/companion-module-cue-keypadcue-55#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
