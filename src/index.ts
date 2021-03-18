@@ -8,17 +8,12 @@ import {
 import { GetActionsList, HandleAction } from './actions'
 import { DeviceConfig, GetConfigFields } from './config'
 
-const tcp = require('tcp')
-const socket = require('socket.io')
-
-
-
 class ControllerInstance extends InstanceSkel<DeviceConfig> {
-	initDone: Boolean
+	private socket: Socket | undefined
+	// private receiveBuffer: Buffer = Buffer.alloc(0)
 	constructor(system: CompanionSystem, id: string, config: DeviceConfig) {
 		super(system, id, config)
-		this.socket
-		this.initDone = false
+
 	}
 
 	/**
@@ -30,35 +25,43 @@ class ControllerInstance extends InstanceSkel<DeviceConfig> {
 		this.updateConfig(this.config)
 	}
 
-	public init_tcp(): void {
-		if (this.socket !== undefined) {
-			this.socket.destroy();
-			delete this.socket;
-		}
-	
-		this.status(this.STATUS_WARNING, 'Connecting');
-	
+	public initSocket(): void {
+		this.socket = new Socket()
+		this.socket.on('error', (e) => {
+			console.log('error', e)
+		})
+		this.socket.on('connect', () => {
+			console.log('connected')
+		})
+		this.socket.on('data', (d) => {
+			let Button1Press = Buffer.from([0x01, 0x74, 0x32, 0x42, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03])
+			let Button1Release = Buffer.from([0x01, 0x54, 0x32, 0x43, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03])
+			if(Buffer.compare(Button1Press, d) == 0 ) {
+				console.log('Button 1 press')
+				this.socket?.write(Buffer.from([0x13, 0xFF, 0x13, 0xFF, 0x13, 0x01, 0x75, 0x32, 0x42, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03, 0x11]))
+			} else if(Buffer.compare(Button1Release, d) == 0 ) {
+				console.log('Button 1 release')
+				this.socket?.write(Buffer.from([0x13, 0xFF, 0x13, 0xFF, 0x13, 0x01, 0x55, 0x32, 0x43, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03, 0x11]))
+			} else {
+				console.log('data', d)
+			}
+		})
+
 		if (this.config.host) {
-			this.socket = new tcp(this.config.host, this.config.port);
-	
-			this.socket.on('status_change', function (status, message) {
-				this.status(status, message);
-			});
-	
-			this.socket.on('error', function (err) {
-				debug("Network error", err);
-				this.status(this.STATE_ERROR, err);
-				this.log('error',"Network error: " + err.message);
-			});
-	
-			this.socket.on('connect', function () {
-				this.status(this.STATE_OK);
-				debug("Connected");
-			})
-	
-			this.socket.on('data', function (data) {});
+			console.log(`Connecting to ${this.config.host}:${this.config.port}`)
+			this.socket.connect(8069, '172.16.0.135')
 		}
 	}
+	
+	// private _handleReceivedData(data: Buffer): void {
+	// 	console.log('data', data)
+	// 	let pressButton1 = Buffer.from([0x01, 0x74, 0x32, 0x42, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03])
+	// 	if(Buffer.compare(pressButton1, data) == 0 ) {
+	// 		console.log('Button 1 press')
+	// 		this.socket.emit("message",Buffer.from([0x13, 0xFF, 0x13, 0xFF, 0x13, 0x01, 0x75, 0x32, 0x42, 0x30, 0x30, 0x30, 0x30, 0x34, 0x31, 0x03, 0x11]))
+	// 	}
+	// 	this.receiveBuffer = Buffer.concat([this.receiveBuffer, data])
+	// }
 	/**
 	 * Process an updated configuration array.
 	 *
@@ -67,9 +70,8 @@ class ControllerInstance extends InstanceSkel<DeviceConfig> {
 	 */
 	public updateConfig(config: DeviceConfig): void {
 		this.config = config
-		this.initDone = false
 		this.setActions(GetActionsList())
-		this.init_tcp()
+		this.initSocket()
 	}
 
 	public action(action: CompanionActionEvent): void {

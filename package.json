@@ -58,10 +58,5 @@
 	},
 	"resolutions": {
 		"eslint/inquirer": "~7.2.0"
-	},
-	"dependencies": {
-		"@types/socket.io": "^2.1.13",
-		"@types/socket.io-client": "^1.4.36",
-		"socket.io": "^4.0.0"
 	}
 }
