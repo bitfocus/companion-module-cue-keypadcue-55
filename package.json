@@ -1,6 +1,6 @@
 {
 	"name": "cue-keypadcue-55",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"api_version": "1.0.0",
 	"description": "See [HELP.md](./HELP.md) and [LICENSE](./LICENSE)",
 	"main": "dist/index.js",
