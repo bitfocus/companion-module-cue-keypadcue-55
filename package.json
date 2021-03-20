@@ -26,7 +26,8 @@
 	},
 	"homepage": "https://github.com/bitfocus/companion-module-cue-keypadcue-55#readme",
 	"scripts": {
-		"build": "rimraf dist && yarn build:main",
+		"dev": "yarn build:watch",
+		"build": "npx rimraf dist && npx typescript@~4.0.5 -p tsconfig.build.json",
 		"build:main": "tsc -p tsconfig.build.json",
 		"build:watch": "tsc -p tsconfig.build.json --watch",
 		"lint": "eslint . --ext .ts",
